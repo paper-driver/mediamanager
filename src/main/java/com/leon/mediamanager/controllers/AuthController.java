@@ -68,6 +68,8 @@ public class AuthController {
                 .map(item -> item.getAuthority())
                 .collect(Collectors.toList());
 
+        logger.info("generated JWT for login");
+
         return ResponseEntity.ok(new JwtResponse(jwt,
                 userDetails.getId(),
                 userDetails.getUsername(),
@@ -119,7 +121,7 @@ public class AuthController {
         }
 
         user.setRoles(roles);
-        userRepository.save(user);
+        userRepository.saveAndFlush(user);
 
         return ResponseEntity.ok().body(new MessageResponse("Finished signup"));
 
