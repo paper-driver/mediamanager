@@ -1,6 +1,5 @@
 package com.leon.mediamanager;
 
-import com.leon.service.RESTfulService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,5 +17,7 @@ public class MediamanagerApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(MediamanagerApplication.class, args);
 	}
+
+
 
 }
