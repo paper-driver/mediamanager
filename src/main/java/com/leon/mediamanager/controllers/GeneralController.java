@@ -22,6 +22,7 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.beans.factory.annotation.Value;
 
 import javax.validation.Valid;
+import javax.xml.ws.Response;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -29,7 +30,7 @@ import java.util.Set;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/protected")
 public class GeneralController {
 
     private static final Logger logger = LoggerFactory.getLogger(GeneralController.class);
@@ -101,7 +102,7 @@ public class GeneralController {
             mailMessage.setSubject("Media Manager Role update request from " + user.getUsername());
             mailMessage.setFrom(emailAddress);
             mailMessage.setText("To approve the request, please click following link :"
-                    + "http://localhost:8080/roleconfirmation?token=" + appendingToken.getToken());
+                    + "http://localhost:8080/api/public/roleconfirmation?token=" + appendingToken.getToken());
 
             emailSenderService.sendEmail(mailMessage);
             roleUpdateMsg = "The request of updating role has been sent out to admin.";
@@ -120,4 +121,6 @@ public class GeneralController {
         MessageResponse msgResponse = new MessageResponse(roleUpdateMsg + " " + pwdUpdateMsg);
         return ResponseEntity.ok(msgResponse);
     }
+
+
 }
