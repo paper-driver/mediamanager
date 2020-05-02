@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,6 +46,9 @@ public class GeneralController {
     @Autowired
     EmailSenderService emailSenderService;
 
+    @Autowired
+    PasswordEncoder encoder;
+
     @Value("${email.address}")
     String emailAddress;
 
@@ -63,37 +67,52 @@ public class GeneralController {
         String roleUpdateMsg = "";
         String pwdUpdateMsg = "";
 
-        if(updateProfileRequest.getRole() != null || !updateProfileRequest.getRole().isEmpty()){
+        logger.info("updating profile");
+        logger.warn("update request of role: {}", updateProfileRequest.getRole());
+        if(updateProfileRequest.getRole() != null && !updateProfileRequest.getRole().isEmpty()){
 
             /* organize requested roles */
-            List<Role> requestedRole = new ArrayList<Role>();
-            for(ERole roleName: updateProfileRequest.getRole()){
-                Role role = roleRepository.findByName(roleName)
+            Set<Role> requestedRole = new HashSet<>();
+            for(Role role: updateProfileRequest.getRole()){
+                Role actualRole = roleRepository.findByName(role.getName())
                         .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                requestedRole.add(role);
+                requestedRole.add(actualRole);
             }
 
+            /* check existing of token */
             User user = userRepository.findByUsername(updateProfileRequest.getUsername())
                     .orElseThrow(() -> new RuntimeException("Error: User is not found."));
-            ConfirmationToken token = new ConfirmationToken(user, requestedRole);
+            ConfirmationToken appendingToken = confirmationTokenRepository.findByUserId(user.getId());
+            if(appendingToken != null){
+                /* there is a request already */
+                appendingToken.setRoles(requestedRole);
+            }else{
+                /* create a new token */
+                appendingToken = new ConfirmationToken(user);
+                appendingToken.setRoles(requestedRole);
+            }
+            logger.warn("save token info: {}", appendingToken.getUser().getUsername());
+            confirmationTokenRepository.saveAndFlush(appendingToken);
 
-            confirmationTokenRepository.saveAndFlush(token);
-
+            /* send an email */
+            logger.warn("generated token: {}", appendingToken.getToken());
             SimpleMailMessage mailMessage = new SimpleMailMessage();
             mailMessage.setTo(emailAddress);
             mailMessage.setSubject("Media Manager Role update request from " + user.getUsername());
             mailMessage.setFrom(emailAddress);
             mailMessage.setText("To approve the request, please click following link :"
-                    + "http://localhost:8080/roleconfirmation?token=" + token.getToken());
+                    + "http://localhost:8080/roleconfirmation?token=" + appendingToken.getToken());
 
             emailSenderService.sendEmail(mailMessage);
-            roleUpdateMsg = "The request of updating role has been sent out to admin>";
+            roleUpdateMsg = "The request of updating role has been sent out to admin.";
         }
 
-        if(updateProfileRequest.getPassword() != null || !updateProfileRequest.getPassword().isEmpty()){
+        logger.warn("update request of password: {}", updateProfileRequest.getPassword());
+        if(updateProfileRequest.getPassword() != null && !updateProfileRequest.getPassword().equals("")){
             User user = userRepository.findByUsername(updateProfileRequest.getUsername())
                     .orElseThrow(() -> new RuntimeException("Error: User is not found."));
-            user.setPassword(updateProfileRequest.getPassword());
+
+            user.setPassword(encoder.encode(updateProfileRequest.getPassword()));
             userRepository.saveAndFlush(user);
             pwdUpdateMsg = "Password has been successfully updated.";
         }

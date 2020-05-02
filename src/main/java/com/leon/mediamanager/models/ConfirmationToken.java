@@ -12,24 +12,28 @@ import java.util.UUID;
 @Table(name = "confirmation_token")
 public class ConfirmationToken {
     @Id
-    @Column(name = "id")
     private Long id;
-
-    @Column(name = "roles")
-    private Set<Integer> roles = new HashSet<Integer>();
 
     @Column(name = "token")
     private String token;
 
-    @OneToOne(targetEntity = User.class, fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
     @MapsId
     private User user;
 
-    public ConfirmationToken(User user, List<Role> roles){
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(	name = "token_roles",
+            joinColumns = @JoinColumn(name = "confirmation_token_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private Set<Role> roles = new HashSet<Role>();
+
+    public ConfirmationToken(User user){
         this.user = user;
-        setRoles(roles);
         this.token = UUID.randomUUID().toString();
     }
+
+    public ConfirmationToken(){}
 
     public Long getId() {
         return id;
@@ -43,17 +47,19 @@ public class ConfirmationToken {
         return token;
     }
 
-    public void setToken(String token) {
-        this.token = token;
+    public void setToken() {
+        this.token = UUID.randomUUID().toString();
     }
 
-    public Set<Integer> getRoles() {
+    public Set<Role> getRoles() {
         return roles;
     }
 
-    public void setRoles(List<Role> roles){
-        for(Role role : roles){
-            this.roles.add(role.getId());
-        }
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
     }
+
+    public User getUser() { return user; }
+
+    public void setUser(User user) { this.user = user; }
 }

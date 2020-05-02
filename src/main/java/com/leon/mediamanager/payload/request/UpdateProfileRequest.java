@@ -1,6 +1,7 @@
 package com.leon.mediamanager.payload.request;
 
 import com.leon.mediamanager.models.ERole;
+import com.leon.mediamanager.models.Role;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
@@ -18,7 +19,7 @@ public class UpdateProfileRequest {
     @Email
     private String email;
 
-    private Set<ERole> role;
+    private Set<Role> role;
 
     @NotBlank
     @Size(min = 6, max = 40)
@@ -40,11 +41,11 @@ public class UpdateProfileRequest {
         this.email = email;
     }
 
-    public Set<ERole> getRole() {
+    public Set<Role> getRole() {
         return this.role;
     }
 
-    public void setRole(Set<ERole> role) {
+    public void setRole(Set<Role> role) {
         this.role = role;
     }
 
