@@ -3,6 +3,7 @@ package com.leon.mediamanager.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -19,11 +20,15 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import com.leon.mediamanager.security.jwt.AuthEntryPointJwt;
 import com.leon.mediamanager.security.jwt.AuthTokenFilter;
 import com.leon.mediamanager.security.services.UserDetailsServiceImpl;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.LinkedList;
 
 @Configuration
 @EnableWebSecurity
@@ -67,15 +72,19 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers("/api/auth/**").permitAll()
                 .antMatchers("/api/protected/**").permitAll()
+                .antMatchers("/api/public/**").permitAll()
+                .antMatchers("/favicon.ico").permitAll()
                 .anyRequest().authenticated().and()
                 .csrf().disable();
 
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 
-    @Override
-    public void configure(WebSecurity web) throws Exception {
-//        web.ignoring().regexMatchers("/api/roleconfirmation?token=([0-9]+$)|([0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})");
-        web.ignoring().antMatchers("/api/public/**");
-    }
+
+
+//    @Override
+//    public void configure(WebSecurity web) throws Exception {
+////        web.ignoring().regexMatchers("/api/roleconfirmation?token=([0-9]+$)|([0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})");
+//        web.ignoring().antMatchers("api/public/**");
+//    }
 }

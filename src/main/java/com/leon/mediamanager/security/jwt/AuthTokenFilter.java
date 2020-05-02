@@ -1,6 +1,9 @@
 package com.leon.mediamanager.security.jwt;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -17,6 +20,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.util.AntPathMatcher;
 
 import com.leon.mediamanager.security.services.UserDetailsServiceImpl;
 
@@ -24,10 +28,14 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     @Autowired
     private JwtUtils jwtUtils;
 
+    private static final Logger logger = LoggerFactory.getLogger(AuthTokenFilter.class);
+
     @Autowired
     private UserDetailsServiceImpl userDetailsService;
 
-    private static final Logger logger = LoggerFactory.getLogger(AuthTokenFilter.class);
+    private static final AntPathMatcher pathMatcher = new AntPathMatcher();
+
+    private Set<String> skipUrls = new HashSet<>(Arrays.asList("/api/public/**", "/favicon.ico"));
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -49,6 +57,18 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        Boolean exclude = skipUrls.stream().anyMatch(p -> pathMatcher.match(p, request.getServletPath()));
+//        Boolean exclude = pathMatcher.match("/api/public/**", request.getServletPath());
+        if(exclude){
+            logger.warn("not filter: {}", request.getServletPath());
+            return true;
+        }
+        logger.warn("filter: {}", request.getServletPath());
+        return false;
     }
 
     private String parseJwt(HttpServletRequest request) {
