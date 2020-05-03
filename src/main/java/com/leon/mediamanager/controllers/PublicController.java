@@ -22,10 +22,7 @@ import org.springframework.beans.factory.annotation.Value;
 
 import javax.validation.Valid;
 import javax.xml.ws.Response;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -59,6 +56,16 @@ public class PublicController {
         ConfirmationToken pendingToken = confirmationTokenRepository.findByToken(token);
 
         if(pendingToken != null){
+            /* verify the expiry date of pending token */
+            Calendar calendar = Calendar.getInstance();
+            if((pendingToken.getExpiryDate().getTime()-calendar.getTime().getTime())<=0){
+                /* delete token and request */
+                confirmationTokenRepository.delete(pendingToken);
+                confirmationTokenRepository.flush();
+
+                return ResponseEntity.ok(new MessageResponse("Bad Request: Token is expired."));
+            }
+
             User user = userRepository.findById(pendingToken.getId())
                     .orElseThrow(() -> new RuntimeException("Error: User is not found."));
             logger.warn("requested roles: {}", pendingToken.getRoles().toString());
