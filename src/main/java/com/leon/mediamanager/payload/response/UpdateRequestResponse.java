@@ -5,6 +5,7 @@ import com.leon.mediamanager.models.ERole;
 import com.leon.mediamanager.models.Role;
 import com.leon.mediamanager.models.User;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -13,7 +14,7 @@ public class UpdateRequestResponse {
     private String token;
     private String username;
     private String email;
-    private List<ERole> pendingRoles;
+    private List<ERole> pendingRoles = new ArrayList<>();
 
     public UpdateRequestResponse(String token, User user, Set<Role> roles){
         setToken(token);

@@ -10,7 +10,7 @@ import java.util.List;
 public interface ConfirmationTokenRepository extends JpaRepository<ConfirmationToken, String> {
     ConfirmationToken findByToken(String token);
 
-    @Query(value = "SELECT u FROM ConfirmationToken u WHERE u.user.id = user_id")
+    @Query(value = "SELECT u FROM ConfirmationToken u WHERE u.id = :user_id")
     ConfirmationToken findByUserId(@Param("user_id") Long user_id);
 
     List<ConfirmationToken> findAll();

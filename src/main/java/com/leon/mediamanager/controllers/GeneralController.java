@@ -142,6 +142,8 @@ public class GeneralController {
         List<ConfirmationToken> requests = confirmationTokenRepository.findAll();
         List<UpdateRequestResponse> responses = new ArrayList<>();
 
+        logger.warn("got # requests: {}", requests.size());
+
         for(ConfirmationToken request : requests) {
             UpdateRequestResponse response = new UpdateRequestResponse();
             response.setObjectFromTokenObject(request);
