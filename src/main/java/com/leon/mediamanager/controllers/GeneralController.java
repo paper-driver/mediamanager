@@ -7,10 +7,12 @@ import com.leon.mediamanager.models.User;
 import com.leon.mediamanager.payload.request.UpdateProfileRequest;
 import com.leon.mediamanager.payload.response.ListResponse;
 import com.leon.mediamanager.payload.response.MessageResponse;
+import com.leon.mediamanager.payload.response.UpdateRequestResponse;
 import com.leon.mediamanager.repository.ConfirmationTokenRepository;
 import com.leon.mediamanager.repository.RoleRepository;
 import com.leon.mediamanager.repository.UserRepository;
 import com.leon.mediamanager.security.services.EmailSenderService;
+import org.hibernate.sql.Update;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,7 +66,7 @@ public class GeneralController {
 
     @PostMapping("/updateprofile")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public ResponseEntity<?> updateProfile(@Valid @RequestBody UpdateProfileRequest updateProfileRequest){
+    public ResponseEntity<?> updateProfile(@Valid @RequestBody UpdateProfileRequest updateProfileRequest) {
         String roleUpdateMsg = "";
         String pwdUpdateMsg = "";
 
@@ -80,32 +82,43 @@ public class GeneralController {
                 requestedRole.add(actualRole);
             }
 
-            /* check existing of token */
+            /* check whether there is change in roles */
             User user = userRepository.findByUsername(updateProfileRequest.getUsername())
                     .orElseThrow(() -> new RuntimeException("Error: User is not found."));
-            ConfirmationToken appendingToken = confirmationTokenRepository.findByUserId(user.getId());
-            if(appendingToken != null){
-                /* there is a request already */
-                appendingToken.setRoles(requestedRole);
-            }else{
-                /* create a new token */
-                appendingToken = new ConfirmationToken(user);
-                appendingToken.setRoles(requestedRole);
+            if(!user.getRoles().equals(requestedRole)){
+                /* check existing of token */
+                ConfirmationToken appendingToken = confirmationTokenRepository.findByUserId(user.getId());
+                if(appendingToken != null){
+                    /* there is a request already */
+                    appendingToken.setRoles(requestedRole);
+                }else{
+                    /* create a new token */
+                    appendingToken = new ConfirmationToken(user);
+                    appendingToken.setRoles(requestedRole);
+                }
+                logger.warn("save token info: {}", appendingToken.getUser().getUsername());
+                confirmationTokenRepository.saveAndFlush(appendingToken);
+
+                /* send an email */
+                logger.warn("generated token: {}", appendingToken.getToken());
+                SimpleMailMessage mailMessage = new SimpleMailMessage();
+                mailMessage.setTo(emailAddress);
+                mailMessage.setSubject("Media Manager Role update request from " + user.getUsername());
+                mailMessage.setFrom(emailAddress);
+
+                /* format the message body */
+                String newline =System.getProperty("line.separator");
+                StringBuffer sb = new StringBuffer();
+                sb.append("To approve the request, please click following link :"
+                        + "http://localhost:8080/api/public/roleconfirmation?token=" + appendingToken.getToken() + newline);
+                sb.append("To reject the request, please click following link :"
+                        + "http://localhost:8080/api/public/rolerejection?token=" + appendingToken.getToken());
+                /* send message */
+                mailMessage.setText(sb.toString());
+
+                emailSenderService.sendEmail(mailMessage);
+                roleUpdateMsg = "The request of updating role has been sent out to admin.";
             }
-            logger.warn("save token info: {}", appendingToken.getUser().getUsername());
-            confirmationTokenRepository.saveAndFlush(appendingToken);
-
-            /* send an email */
-            logger.warn("generated token: {}", appendingToken.getToken());
-            SimpleMailMessage mailMessage = new SimpleMailMessage();
-            mailMessage.setTo(emailAddress);
-            mailMessage.setSubject("Media Manager Role update request from " + user.getUsername());
-            mailMessage.setFrom(emailAddress);
-            mailMessage.setText("To approve the request, please click following link :"
-                    + "http://localhost:8080/api/public/roleconfirmation?token=" + appendingToken.getToken());
-
-            emailSenderService.sendEmail(mailMessage);
-            roleUpdateMsg = "The request of updating role has been sent out to admin.";
         }
 
         logger.warn("update request of password: {}", updateProfileRequest.getPassword());
@@ -122,5 +135,20 @@ public class GeneralController {
         return ResponseEntity.ok(msgResponse);
     }
 
+    @GetMapping("/requests")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> getPendingRequests() {
+        /* Get all update requests */
+        List<ConfirmationToken> requests = confirmationTokenRepository.findAll();
+        List<UpdateRequestResponse> responses = new ArrayList<>();
+
+        for(ConfirmationToken request : requests) {
+            UpdateRequestResponse response = new UpdateRequestResponse();
+            response.setObjectFromTokenObject(request);
+            responses.add(response);
+        }
+
+        return ResponseEntity.ok(responses);
+    }
 
 }

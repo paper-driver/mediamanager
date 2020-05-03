@@ -62,12 +62,9 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         Boolean exclude = skipUrls.stream().anyMatch(p -> pathMatcher.match(p, request.getServletPath()));
-//        Boolean exclude = pathMatcher.match("/api/public/**", request.getServletPath());
         if(exclude){
-            logger.warn("not filter: {}", request.getServletPath());
             return true;
         }
-        logger.warn("filter: {}", request.getServletPath());
         return false;
     }
 

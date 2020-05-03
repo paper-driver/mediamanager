@@ -54,6 +54,7 @@ public class PublicController {
 
     @GetMapping("/roleconfirmation")
     public ResponseEntity<?> approveRoleUpdate(@RequestParam("token")String token){
+        logger.info("approving role update for: {}", token);
         /* get stored pending token */
         ConfirmationToken pendingToken = confirmationTokenRepository.findByToken(token);
 
@@ -85,5 +86,22 @@ public class PublicController {
         }else{
             return ResponseEntity.badRequest().body(new MessageResponse("Error: no such token."));
         }
+    }
+
+    @GetMapping("/rolerejection")
+    public ResponseEntity<?> rejectRoleUpdate(@RequestParam("token")String token){
+        logger.info("rejecting role update for: {}", token);
+        /* get stored pending token */
+        ConfirmationToken pendingToken = confirmationTokenRepository.findByToken(token);
+
+        /* delete used confirmation token */
+        confirmationTokenRepository.delete(pendingToken);
+        confirmationTokenRepository.flush();
+
+        if(confirmationTokenRepository.findByToken(token) == null){
+            logger.info("successfully delete the used token");
+        }
+
+        return ResponseEntity.ok(new MessageResponse("Rejected."));
     }
 }
