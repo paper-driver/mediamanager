@@ -1,0 +1,54 @@
+server:
+  port: 8080
+
+spring:
+  profile: dev
+
+  datasource:
+    password: yuxuanmao
+    url: jdbc:postgresql://media-manager-test-db.cno7ndfgvs68.us-east-2.rds.amazonaws.com:5432/testdb
+    username: postgres
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          lob:
+            non_contextual_creation: true
+  mail:
+    host: smtp.gmail.com
+    password: google.yuxuan
+    port: 587
+    properties:
+      mail:
+        smtp:
+          auth: true
+          connectiontimeout: 5000
+          starttls:
+            enable: true
+            required: true
+          timeout: 5000
+          writetimeout: 5000
+    username: yuxuan.mao.1@gmail.com
+
+  jackson:
+    date-format: com.fasterxml.jackson.databind.util.ISO8601DateFormat
+
+sso:
+  github:
+    type: bearer
+    token: ea36836a005832f38dc6e56f417d9cd1f6ea1d41
+
+downstream:
+  storageapi: http://localhost:8081
+
+email:
+  address: yuxuan.mao.1@gmail.com
+
+mediamanager:
+  app:
+    jwtExpirationMs: 86400000
+    jwtSecret: mediaManagerSecretKey
