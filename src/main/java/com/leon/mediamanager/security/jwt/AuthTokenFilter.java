@@ -35,7 +35,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
     private static final AntPathMatcher pathMatcher = new AntPathMatcher();
 
-    private Set<String> skipUrls = new HashSet<>(Arrays.asList("/api/public/**", "/favicon.ico", "/api/microservice/**"));
+    private Set<String> skipUrls = new HashSet<>(Arrays.asList("/api/public/**", "/favicon.ico", "/login/**"));
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -63,6 +63,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) {
         Boolean exclude = skipUrls.stream().anyMatch(p -> pathMatcher.match(p, request.getServletPath()));
         if(exclude){
+            logger.warn("skip filtering for the URL: {}", request.getRequestURL());
             return true;
         }
         return false;

@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.security.oauth2.client.EnableOAuth
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -27,6 +28,7 @@ import com.leon.mediamanager.security.services.UserDetailsServiceImpl;
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
+@Order(2)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     UserDetailsServiceImpl userDetailsService;
@@ -66,18 +68,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.cors().and()
+        http.cors().and().csrf().disable()
                 .exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
                 .authorizeRequests()
-                .antMatchers("/login").permitAll()
+                .antMatchers("/login/**").permitAll()
                 .antMatchers("/api/auth/**").permitAll()
                 .antMatchers("/api/protected/**").permitAll()
-                .antMatchers("/api/microservice/**").permitAll()
                 .antMatchers("/api/public/**").permitAll()
                 .antMatchers("/favicon.ico").permitAll()
                 .anyRequest().authenticated().and()
-                .csrf().disable();
+                .requestMatchers().antMatchers( "/api/auth/**", "/api/protected/**", "login/oauth/access_token**", "/login/oauth/authorize**");
 
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
     }

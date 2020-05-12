@@ -3,10 +3,19 @@ package com.leon.mediamanager.controllers;
 import com.leon.mediamanager.payload.response.MessageResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.RequestEntity;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import java.net.URI;
 
 @Service("internalRestService")
 public class InternalRestService {
@@ -22,6 +31,9 @@ public class InternalRestService {
     @Value("${sso.github.type}")
     String token_type;
 
+    @Autowired
+    OAuth2RestTemplate oAuth2RestTemplate;
+
     private RestTemplate rest;
     private HttpHeaders headers;
     private HttpStatus status;
@@ -36,8 +48,8 @@ public class InternalRestService {
     }
 
     public ResponseEntity<?> checkStorageApi() {
-        HttpEntity<String> requestEntity = new HttpEntity<String>("", headers);
-        ResponseEntity<?> msg = rest.exchange(storageApiUrl + "api/central/access", HttpMethod.GET, requestEntity, String.class);
+        URI uri = UriComponentsBuilder.fromHttpUrl(storageApiUrl).pathSegment("api/central/access").build().toUri();
+        ResponseEntity<?> msg = oAuth2RestTemplate.exchange(RequestEntity.get(uri).build(), String.class);
         logger.warn(msg.toString());
         return msg;
     }
