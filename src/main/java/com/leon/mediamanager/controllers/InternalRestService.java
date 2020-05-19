@@ -26,10 +26,10 @@ public class InternalRestService {
     String storageApiUrl;
 
     @Value("${sso.github.token}")
-    String access_token;
-
-    @Value("${sso.github.type}")
-    String token_type;
+    String accessToken;
+//
+//    @Value("${sso.github.type}")
+//    String token_type;
 
     @Autowired
     OAuth2RestTemplate oAuth2RestTemplate;
@@ -43,13 +43,15 @@ public class InternalRestService {
         this.headers = new HttpHeaders();
         headers.add("Content-Type", "application/json");
         headers.add("Accept", "*/*");
-        headers.add("access_token", access_token);
-        headers.add("token_type", token_type);
     }
 
     public ResponseEntity<?> checkStorageApi() {
         URI uri = UriComponentsBuilder.fromHttpUrl(storageApiUrl).pathSegment("api/central/access").build().toUri();
-        ResponseEntity<?> msg = oAuth2RestTemplate.exchange(RequestEntity.get(uri).build(), String.class);
+//        logger.warn("send request ot storage api: {}", oAuth2RestTemplate.getAccessToken());
+//        ResponseEntity<?> msg = oAuth2RestTemplate.exchange(RequestEntity.get(uri).build(), String.class);
+        headers.add("Authorization", "Bearer " + accessToken);
+        logger.info("internal request token: {}", "Bearer " + accessToken);
+        ResponseEntity<?> msg = rest.exchange(RequestEntity.get(uri).headers(headers).build(), String.class);
         logger.warn(msg.toString());
         return msg;
     }

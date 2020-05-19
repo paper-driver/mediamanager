@@ -39,8 +39,7 @@ spring:
 
 sso:
   github:
-    type: bearer
-    token: ea36836a005832f38dc6e56f417d9cd1f6ea1d41
+    token: 9280ea96f98672fd7f32df6df3d3dcbacfa36b2e
 
 downstream:
   storageapi: http://localhost:8081

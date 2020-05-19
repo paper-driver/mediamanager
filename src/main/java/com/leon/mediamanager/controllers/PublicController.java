@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -41,6 +42,9 @@ public class PublicController {
 
     @Autowired
     PasswordEncoder encoder;
+
+    @Autowired
+    OAuth2RestTemplate oAuth2RestTemplate;
 
     @Value("${email.address}")
     String emailAddress;

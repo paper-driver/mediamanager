@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -24,6 +25,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import com.leon.mediamanager.security.jwt.AuthEntryPointJwt;
 import com.leon.mediamanager.security.jwt.AuthTokenFilter;
 import com.leon.mediamanager.security.services.UserDetailsServiceImpl;
+import org.springframework.security.web.util.matcher.AndRequestMatcher;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
+
+import javax.servlet.http.HttpServletRequest;
 
 @Configuration
 @EnableWebSecurity
@@ -72,16 +78,55 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
                 .authorizeRequests()
-                .antMatchers("/login/**").permitAll()
                 .antMatchers("/api/auth/**").permitAll()
                 .antMatchers("/api/protected/**").permitAll()
                 .antMatchers("/api/public/**").permitAll()
                 .antMatchers("/favicon.ico").permitAll()
                 .anyRequest().authenticated().and()
-                .requestMatchers().antMatchers( "/api/auth/**", "/api/protected/**", "login/oauth/access_token**", "/login/oauth/authorize**");
+                .requestMatchers().antMatchers( "/api/public/**", "/api/auth/**", "/api/protected/**");
 
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
     }
+
+    /**
+     * Creates a request matcher which only matches requests for a specific local port and path (using an
+     * {@link AntPathRequestMatcher} for the path part).
+     *
+     * @param   port         the port to match
+     * @param   pathPattern  the pattern for the path.
+     *
+     * @return  the new request matcher.
+     */
+    private RequestMatcher forPortAndPath(final int port, final String pathPattern) {
+        return new AndRequestMatcher(forPort(port), new AntPathRequestMatcher(pathPattern));
+    }
+
+    /**
+     * Creates a request matcher which only matches requests for a specific local port, path and request method (using
+     * an {@link AntPathRequestMatcher} for the path part).
+     *
+     * @param   port         the port to match
+     * @param   pathPattern  the pattern for the path.
+     * @param   method       the HttpMethod to match. Requests for other methods will not be matched.
+     *
+     * @return  the new request matcher.
+     */
+    private RequestMatcher forPortAndPath(final int port,  final HttpMethod method,
+                                          final String pathPattern) {
+        return new AndRequestMatcher(forPort(port), new AntPathRequestMatcher(pathPattern, method.name()));
+    }
+
+    /**
+     * A request matcher which matches just a port.
+     *
+     * @param   port  the port to match.
+     *
+     * @return  the new matcher.
+     */
+    private RequestMatcher forPort(final int port) {
+        return (HttpServletRequest request) -> { return port == request.getLocalPort(); };
+    }
+
 
 
 
