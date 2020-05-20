@@ -55,14 +55,20 @@ mediamanager:
 auth-server: https://github.com/login
 
 security:
-  basic:
-    enabled: false
   oauth2:
     client:
-      client-id: f6863fdc166880e7f5a8
-      client-secret: e1a2fcf7cf22b96ae35380bed54d6e501ad668a9
-      access-token-uri: ${auth-server}/oauth/access_token
-      user-authorization-uri: ${auth-server}/oauth/authorize
-      scope: user
-    resource:
-      user-info-uri: https://api.github.com/user
+      grantType: client_credentials
+      clientId: local8080_to_storage
+      clientSecret: storagelocker
+      accessTokenUri: http://localhost:4300/oauth/token
+#  basic:
+#    enabled: false
+#  oauth2:
+#    client:
+#      client-id: f6863fdc166880e7f5a8
+#      client-secret: e1a2fcf7cf22b96ae35380bed54d6e501ad668a9
+#      access-token-uri: ${auth-server}/oauth/access_token
+#      user-authorization-uri: ${auth-server}/oauth/authorize
+#      scope: user
+#    resource:
+#      user-info-uri: https://api.github.com/user

@@ -10,11 +10,15 @@ import com.leon.mediamanager.security.services.EmailSenderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.client.RestTemplate;
+
 
 import java.util.*;
 
@@ -43,11 +47,18 @@ public class PublicController {
     @Autowired
     PasswordEncoder encoder;
 
+//    @Autowired
+//    OAuth2RestTemplate oAuth2RestTemplate;
+
     @Autowired
-    OAuth2RestTemplate oAuth2RestTemplate;
+    @Qualifier("customRestTemplate")
+    RestTemplate restTemplate;
 
     @Value("${email.address}")
     String emailAddress;
+
+    @Value("${downstream.storageapi}")
+    String storageApiUrl;
 
     @GetMapping("/roleconfirmation")
     public ResponseEntity<?> approveRoleUpdate(@RequestParam("token")String token){
@@ -114,6 +125,9 @@ public class PublicController {
 
     @GetMapping("/check-storage-api")
     public ResponseEntity<?> checkTemp() {
-        return internalRestService.checkStorageApi();
+        String  msg = restTemplate.getForObject(storageApiUrl + "/api/central/access", String.class);
+        logger.info("Got the response of /check-storage-api: {}", msg);
+        return ResponseEntity.ok(msg);
+//        return internalRestService.checkStorageApi();
     }
 }

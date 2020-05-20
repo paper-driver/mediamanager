@@ -31,8 +31,8 @@ public class InternalRestService {
 //    @Value("${sso.github.type}")
 //    String token_type;
 
-    @Autowired
-    OAuth2RestTemplate oAuth2RestTemplate;
+//    @Autowired
+//    OAuth2RestTemplate oAuth2RestTemplate;
 
     private RestTemplate rest;
     private HttpHeaders headers;
