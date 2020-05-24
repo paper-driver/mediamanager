@@ -60,7 +60,7 @@ security:
       grantType: client_credentials
       clientId: local8080_to_storage
       clientSecret: storagelocker
-      accessTokenUri: http://localhost:4300/oauth/token
+      accessTokenUri: https://personal-auth-server.herokuapp.com/oauth/token
 #  basic:
 #    enabled: false
 #  oauth2:
