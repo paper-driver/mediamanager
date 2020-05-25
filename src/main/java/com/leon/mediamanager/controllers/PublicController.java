@@ -42,9 +42,6 @@ public class PublicController {
     EmailSenderService emailSenderService;
 
     @Autowired
-    InternalRestService internalRestService;
-
-    @Autowired
     PasswordEncoder encoder;
 
 //    @Autowired
