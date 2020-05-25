@@ -1,0 +1,74 @@
+server:
+  port: 8080
+
+spring:
+  profile: dev
+
+  datasource:
+    password: yuxuanmao
+    url: jdbc:postgresql://media-manager-test-db.cno7ndfgvs68.us-east-2.rds.amazonaws.com:5432/testdb
+    username: postgres
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          lob:
+            non_contextual_creation: true
+  mail:
+    host: smtp.gmail.com
+    password: google.yuxuan
+    port: 587
+    properties:
+      mail:
+        smtp:
+          auth: true
+          connectiontimeout: 5000
+          starttls:
+            enable: true
+            required: true
+          timeout: 5000
+          writetimeout: 5000
+    username: yuxuan.mao.1@gmail.com
+
+  jackson:
+    date-format: com.fasterxml.jackson.databind.util.ISO8601DateFormat
+
+sso:
+  github:
+    token: 9280ea96f98672fd7f32df6df3d3dcbacfa36b2e
+
+downstream:
+  storageapi: http://localhost:8081
+
+email:
+  address: yuxuan.mao.1@gmail.com
+
+mediamanager:
+  app:
+    jwtExpirationMs: 86400000
+    jwtSecret: mediaManagerSecretKey
+
+auth-server: https://github.com/login
+
+security:
+  oauth2:
+    client:
+      grantType: client_credentials
+      clientId: local8080_to_storage
+      clientSecret: storagelocker
+      accessTokenUri: https://personal-auth-server.herokuapp.com/oauth/token
+#  basic:
+#    enabled: false
+#  oauth2:
+#    client:
+#      client-id: f6863fdc166880e7f5a8
+#      client-secret: e1a2fcf7cf22b96ae35380bed54d6e501ad668a9
+#      access-token-uri: ${auth-server}/oauth/access_token
+#      user-authorization-uri: ${auth-server}/oauth/authorize
+#      scope: user
+#    resource:
+#      user-info-uri: https://api.github.com/user
