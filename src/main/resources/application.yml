@@ -52,7 +52,7 @@ mediamanager:
     jwtExpirationMs: 86400000
     jwtSecret: mediaManagerSecretKey
 
-auth-server: https://github.com/login
+#auth-server: https://github.com/login
 
 security:
   oauth2:
