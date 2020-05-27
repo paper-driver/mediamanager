@@ -58,7 +58,7 @@ security:
   oauth2:
     client:
       grantType: client_credentials
-      clientId: local8080_to_storage
+      clientId: media-storage
       clientSecret: storagelocker
       accessTokenUri: https://personal-auth-server.herokuapp.com/oauth/token
 #  basic:

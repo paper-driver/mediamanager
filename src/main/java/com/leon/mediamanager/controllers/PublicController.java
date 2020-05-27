@@ -1,12 +1,11 @@
 package com.leon.mediamanager.controllers;
-import com.leon.mediamanager.models.ConfirmationToken;
-import com.leon.mediamanager.models.Role;
-import com.leon.mediamanager.models.User;
+import com.leon.mediamanager.models.*;
 import com.leon.mediamanager.payload.response.MessageResponse;
 import com.leon.mediamanager.repository.ConfirmationTokenRepository;
 import com.leon.mediamanager.repository.RoleRepository;
 import com.leon.mediamanager.repository.UserRepository;
 import com.leon.mediamanager.security.services.EmailSenderService;
+import com.leon.mediamanager.security.services.OrganizeFileInfoService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +17,7 @@ import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 
 import java.util.*;
@@ -40,6 +40,9 @@ public class PublicController {
 
     @Autowired
     EmailSenderService emailSenderService;
+
+    @Autowired
+    OrganizeFileInfoService organizeFileInfoService;
 
     @Autowired
     PasswordEncoder encoder;
@@ -126,5 +129,30 @@ public class PublicController {
         logger.info("Got the response of /check-storage-api: {}", msg);
         return ResponseEntity.ok(msg);
 //        return internalRestService.checkStorageApi();
+    }
+
+    @GetMapping("/files/{foldername:.+}")
+    public ResponseEntity<List<FileElement>> getListFiles(@PathVariable String foldername) {
+        FileInfo[] fileInfos = restTemplate.getForObject(storageApiUrl + "/api/mm/files/" + foldername, FileInfo[].class);
+        // change url of each file to go through mediamanager
+        for (FileInfo fileInfo : fileInfos) {
+            fileInfo.setUrl(MvcUriComponentsBuilder
+                    .fromMethodName(StorageController.class, "getFile", fileInfo.getUrl()).build().toString());
+        }
+        // create organized parent child relationed file infos
+        List<FileElement> fileElements = organizeFileInfoService.constructFileElements(Arrays.asList(fileInfos), foldername);
+        return ResponseEntity.ok().body(fileElements);
+    }
+
+    @GetMapping("/files")
+    public ResponseEntity<List<FileInfo>> getListFiles() {
+        FileInfo[] fileInfos = restTemplate.getForObject(storageApiUrl + "/api/mm/files", FileInfo[].class);
+        // change url of each file to go through mediamanager
+        for (FileInfo fileInfo : fileInfos) {
+            logger.info(fileInfo.getUrl());
+            fileInfo.setUrl(MvcUriComponentsBuilder
+                    .fromMethodName(StorageController.class, "getFile", fileInfo.getUrl()).build().toString());
+        }
+        return ResponseEntity.ok().body(Arrays.asList(fileInfos));
     }
 }
