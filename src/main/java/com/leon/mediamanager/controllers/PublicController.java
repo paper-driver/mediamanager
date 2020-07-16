@@ -10,16 +10,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.RequestEntity;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
+import sun.plugin2.message.Message;
 
 
+import javax.validation.Valid;
 import java.util.*;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -129,6 +130,24 @@ public class PublicController {
         logger.info("Got the response of /check-storage-api: {}", msg);
         return ResponseEntity.ok(msg);
 //        return internalRestService.checkStorageApi();
+    }
+
+    @PostMapping("/uploadfolder")
+    public ResponseEntity<FileElement> uploadFolder(@Valid @RequestBody FileElement folderElement) {
+        ResponseEntity<MessageResponse> result = restTemplate.getForEntity(
+                storageApiUrl + "/api/mm/uploadfolder&folderpath=" + folderElement.getFullPath(), MessageResponse.class);
+        if(result.getStatusCode().is2xxSuccessful()){
+            FileElement officialFolderElement = new FileElement();
+            officialFolderElement.setFullPath(folderElement.getFullPath());
+            officialFolderElement.setName(folderElement.getName());
+            officialFolderElement.setIsFolder(true);
+            officialFolderElement.setLevel(folderElement.getLevel());
+            officialFolderElement.setParent(folderElement.getParent());
+            // reply Folder element with generated uuid
+            return ResponseEntity.ok().body(officialFolderElement);
+        }else{
+            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(null);
+        }
     }
 
     @GetMapping("/files/{foldername:.+}")

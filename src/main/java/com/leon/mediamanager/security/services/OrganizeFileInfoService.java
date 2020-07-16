@@ -93,6 +93,7 @@ public class OrganizeFileInfoService {
                 folderElement.setName(curFolderName);
                 folderElement.setIsFolder(true);
                 folderElement.setLevel(pathLst.size()-1);
+                folderElement.setFullPath(path);
                 // add curFolder to list
                 newFolderElements.add(folderElement);
             }
@@ -120,6 +121,7 @@ public class OrganizeFileInfoService {
             fileElement.setLevel(curFileLevel);
             fileElement.setIsFolder(false);
             fileElement.setName(curFileName);
+            fileElement.setFullPath(path);
             return fileElement;
         }
         return null;

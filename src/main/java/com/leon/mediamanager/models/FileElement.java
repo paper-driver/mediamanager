@@ -30,6 +30,10 @@ public class FileElement {
     @Setter
     private String url = null;
 
+    @Getter
+    @Setter
+    private String fullPath = null;
+
     public FileElement() {}
 
     public FileElement(Boolean isFolder, String name, UUID parent, int level) {
